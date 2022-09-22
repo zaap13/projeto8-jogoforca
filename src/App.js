@@ -90,7 +90,7 @@ const WordBox = styled.ul`
 const Letter = styled.li`
   width: 30px;
   height: 30px;
-  color: green;
+  color: ${(props) => (props.game ? props.end : "black")};
   font-size: 30px;
   text-align: center;
   border-bottom: 2px solid black;
@@ -175,15 +175,23 @@ export default function App() {
     "y",
     "z",
   ];
+  const keys = alfabeto.map((item, index) => {
+    return [item, false];
+  });
 
   const [word, setWord] = useState("");
-
   const [fails, setFails] = useState(0);
   const [rights, setRights] = useState(0);
   const [forca, setForca] = useState(forca0);
+  const [gameDisabled, setgameDisabled] = useState(true);
+  const [keyButton, setKeyButton] = useState(keys);
+  const [reveal, setReveal] = useState([]);
+  const [wordColor, setWordColor] = useState("red");
 
   useEffect(() => {
-    if (fails === 1) {
+    if (fails === 0) {
+      setForca(forca0);
+    } else if (fails === 1) {
       setForca(forca1);
     } else if (fails === 2) {
       setForca(forca2);
@@ -195,49 +203,55 @@ export default function App() {
       setForca(forca5);
     } else if (fails === 6) {
       setForca(forca6);
-      console.log("PERDEU");
-    } else {
-      console.log("n era pra ta funcionando O.O");
+      setgameDisabled(true);
+      setWordColor("red");
     }
   }, [fails]);
 
   useEffect(() => {
-    if (rights === word.length) {
-      console.log("VENCEU AQUI OH");
+    if (rights === word.length && gameDisabled === false) {
+      setgameDisabled(true);
+      setWordColor("green");
     }
-  }, [rights, word]);
+  }, [rights, word, gameDisabled]);
 
   const keyOnClick = (key) => {
+    console.log(word);
+    const clickedButton = keyButton.map((i) =>
+      i[0] === key ? (i = [key, true]) : i
+    );
+    setKeyButton(clickedButton);
     if (word.includes(key)) {
-      setRights(rights + 1);
+      const newReveal = [...reveal];
+      let count = 0;
+      word.split("").forEach((l, index) => {
+        if (l === key) {
+          count++;
 
-      console.log(
-        "ADD função que mapeia letra por letra e a revela contando 1 acerto pra cada"
-      );
+          newReveal[index] = l.toUpperCase();
+        }
+      });
+      setReveal(newReveal);
+      setRights((rights) => {
+        return rights + count;
+      });
     } else {
-      console.log(word);
-      setFails(fails + 1);
-
-      console.log(
-        "ADD função que conta erros, muda a imagem da forca e se erros = 6 encerra o jogo."
-      );
+      setFails((fails) => {
+        return fails + 1;
+      });
     }
-    console.log(rights);
-    console.log(fails);
   };
-
-  const [gameDisabled, setgameDisabled] = useState(true);
 
   const startOnClick = () => {
     setFails(0);
     setRights(0);
     setgameDisabled(false);
+    setKeyButton(keys);
+    setReveal([]);
 
     // AQUI PRECISA PASSAR A word (AMEM) / IMPRIMIR OS UNDERLINES /
-    setWord("banana");
-    word.split("").forEach((l) => {
-      console.log(l);
-    });
+
+    setWord(words[Math.floor(Math.random() * words.length)]);
   };
 
   return (
@@ -249,28 +263,29 @@ export default function App() {
           <RightBox>
             <Button onClick={startOnClick}>START</Button>
             <WordBox>
-              <Letter>{rights}</Letter>
-              <Letter>{fails}</Letter>
-              <Letter></Letter>
-              <Letter></Letter>
-              <Letter></Letter>
-              <Letter></Letter>
+              {word.split("").map((i, index) => (
+                <Letter key={index} game={gameDisabled} end={wordColor}>
+                  {reveal[index]}
+                </Letter>
+              ))}
             </WordBox>
           </RightBox>
         </GameBox>
         <Keyboard>
-          {alfabeto.map((l, index) => (
+          {keyButton.map((item, index) => (
             <Key
               key={index}
-              disabled={gameDisabled}
-              onClick={() => keyOnClick(l)}
+              letter={item[0]}
+              onClick={() => keyOnClick(item[0])}
+              disabled={gameDisabled ? true : item[1]}
+              end={wordColor}
             >
-              {l.toUpperCase()}
+              {item[0].toUpperCase()}
             </Key>
           ))}
         </Keyboard>
         <Input>
-          Já sei a word! <input type="text" /> <Button>Chutar</Button>
+          Já sei a palavra! <input type="text" /> <Button>Chutar</Button>
         </Input>
       </Container>
     </>
