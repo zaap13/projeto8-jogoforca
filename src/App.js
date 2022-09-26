@@ -32,6 +32,7 @@ const Container = styled.div`
   gap: 20px;
 
   width: 100%;
+  background-color: #cecece;
 `;
 
 const GameBox = styled.div`
@@ -67,6 +68,9 @@ const Button = styled.button`
 
   cursor: pointer;
   background-color: green;
+  :disabled{
+    background-color: gray;
+  }
 `;
 
 const RightBox = styled.div`
@@ -84,7 +88,6 @@ const WordBox = styled.ul`
   align-items: center;
   justify-content: center;
   gap: 5px;
-  background-color: rgba(255, 255, 255, 0.3);
 `;
 
 const Letter = styled.li`
@@ -132,14 +135,13 @@ const Key = styled.button`
   }
 `;
 
-const Input = styled.div`
+const Footer = styled.div`
   width: 600px;
   height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  font-size: 18px;
-  color: gray;
+  font-size: 22px;
 
   @media (max-width: 600px) {
     width: 100%;
@@ -187,6 +189,7 @@ export default function App() {
   const [keyButton, setKeyButton] = useState(keys);
   const [reveal, setReveal] = useState([]);
   const [wordColor, setWordColor] = useState("red");
+  const [input, setInput] = useState("");
 
   useEffect(() => {
     if (fails === 0) {
@@ -204,9 +207,10 @@ export default function App() {
     } else if (fails === 6) {
       setForca(forca6);
       setgameDisabled(true);
+      setReveal(word.toUpperCase());
       setWordColor("red");
     }
-  }, [fails]);
+  }, [fails, word]);
 
   useEffect(() => {
     if (rights === word.length && gameDisabled === false) {
@@ -221,11 +225,16 @@ export default function App() {
       i[0] === key ? (i = [key, true]) : i
     );
     setKeyButton(clickedButton);
-    if (word.includes(key)) {
+    if (
+      word
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .includes(key)
+    ) {
       const newReveal = [...reveal];
       let count = 0;
       word.split("").forEach((l, index) => {
-        if (l === key) {
+        if (l.normalize("NFD").replace(/[\u0300-\u036f]/g, "") === key) {
           count++;
 
           newReveal[index] = l.toUpperCase();
@@ -248,10 +257,19 @@ export default function App() {
     setgameDisabled(false);
     setKeyButton(keys);
     setReveal([]);
-
-    // AQUI PRECISA PASSAR A word (AMEM) / IMPRIMIR OS UNDERLINES /
-
     setWord(words[Math.floor(Math.random() * words.length)]);
+  };
+
+  const handleTry = () => {
+    setgameDisabled(true);
+    setReveal(word.toUpperCase());
+    if (input.normalize("NFD").replace(/[\u0300-\u036f]/g, "") === word.normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
+      setWordColor("green");
+    } else {
+      setForca(forca6);
+      setWordColor("red");
+    }
+    setInput("");
   };
 
   return (
@@ -284,9 +302,11 @@ export default function App() {
             </Key>
           ))}
         </Keyboard>
-        <Input>
-          Já sei a palavra! <input type="text" /> <Button>Chutar</Button>
-        </Input>
+        <Footer>
+          Já sei a palavra!{" "}
+          <input type="text" onChange={(e) => setInput(e.target.value)} value={input} />{" "}
+          <Button onClick={handleTry} disabled={gameDisabled}>Chutar</Button>
+        </Footer>
       </Container>
     </>
   );
