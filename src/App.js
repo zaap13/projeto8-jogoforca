@@ -11,6 +11,9 @@ import {
   forca5,
   forca6,
 } from "./images";
+import Jogo from "./Jogo";
+import Letras from "./Letras";
+import Chute from "./Chute";
 
 const GlobalStyle = createGlobalStyle`
   ${reset}
@@ -33,119 +36,6 @@ const Container = styled.div`
 
   width: 100%;
   background-color: #cecece;
-`;
-
-const GameBox = styled.div`
-  width: 600px;
-  height: 400px;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  @media (max-width: 600px) {
-    width: 100%;
-  }
-`;
-
-const Forca = styled.img`
-  width: 300px;
-  padding: 10px;
-`;
-
-const Button = styled.button`
-  height: 40px;
-
-  background-color: #4caf50; /* Green */
-  border: none;
-  border-radius: 8px;
-  color: white;
-  padding: 10px 24px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-
-  cursor: pointer;
-  background-color: green;
-  :disabled{
-    background-color: gray;
-  }
-`;
-
-const RightBox = styled.div`
-  height: 300px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const WordBox = styled.ul`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-`;
-
-const Letter = styled.li`
-  width: 30px;
-  height: 30px;
-  color: ${(props) => (props.game ? props.end : "black")};
-  font-size: 30px;
-  text-align: center;
-  border-bottom: 2px solid black;
-`;
-
-const Keyboard = styled.div`
-  width: 600px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-
-  @media (max-width: 600px) {
-    width: 100%;
-  }
-`;
-
-const Key = styled.button`
-  width: 40px;
-  height: 40px;
-  border: none;
-  border-radius: 8px;
-  color: gray;
-  font-size: 30px;
-
-  cursor: pointer;
-
-  background-color: black;
-
-  :disabled {
-    background-color: gray;
-    cursor: default;
-    &:hover {
-      color: gray;
-    }
-  }
-  &:hover {
-    background-color: gray;
-    color: white;
-  }
-`;
-
-const Footer = styled.div`
-  width: 600px;
-  height: 80px;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  font-size: 22px;
-
-  @media (max-width: 600px) {
-    width: 100%;
-  }
 `;
 
 export default function App() {
@@ -220,7 +110,6 @@ export default function App() {
   }, [rights, word, gameDisabled]);
 
   const keyOnClick = (key) => {
-    console.log(word);
     const clickedButton = keyButton.map((i) =>
       i[0] === key ? (i = [key, true]) : i
     );
@@ -263,7 +152,10 @@ export default function App() {
   const handleTry = () => {
     setgameDisabled(true);
     setReveal(word.toUpperCase());
-    if (input.normalize("NFD").replace(/[\u0300-\u036f]/g, "") === word.normalize("NFD").replace(/[\u0300-\u036f]/g, "")) {
+    if (
+      input.normalize("NFD").replace(/[\u0300-\u036f]/g, "") ===
+      word.normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    ) {
       setWordColor("green");
     } else {
       setForca(forca6);
@@ -276,37 +168,26 @@ export default function App() {
     <>
       <GlobalStyle />
       <Container>
-        <GameBox>
-          <Forca src={forca} alt="Imagem" />
-          <RightBox>
-            <Button onClick={startOnClick}>START</Button>
-            <WordBox>
-              {word.split("").map((i, index) => (
-                <Letter key={index} game={gameDisabled} end={wordColor}>
-                  {reveal[index]}
-                </Letter>
-              ))}
-            </WordBox>
-          </RightBox>
-        </GameBox>
-        <Keyboard>
-          {keyButton.map((item, index) => (
-            <Key
-              key={index}
-              letter={item[0]}
-              onClick={() => keyOnClick(item[0])}
-              disabled={gameDisabled ? true : item[1]}
-              end={wordColor}
-            >
-              {item[0].toUpperCase()}
-            </Key>
-          ))}
-        </Keyboard>
-        <Footer>
-          Já sei a palavra!{" "}
-          <input type="text" onChange={(e) => setInput(e.target.value)} value={input} />{" "}
-          <Button onClick={handleTry} disabled={gameDisabled}>Chutar</Button>
-        </Footer>
+        <Jogo
+          forca={forca}
+          startOnClick={startOnClick}
+          word={word}
+          gameDisabled={gameDisabled}
+          wordColor={wordColor}
+          reveal={reveal}
+        />
+        <Letras
+          keyButton={keyButton}
+          keyOnClick={keyOnClick}
+          gameDisabled={gameDisabled}
+          wordColor={wordColor}
+        />
+        <Chute
+          setInput={setInput}
+          input={input}
+          handleTry={handleTry}
+          gameDisabled={gameDisabled}
+        />
       </Container>
     </>
   );
