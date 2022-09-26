@@ -67,7 +67,7 @@ export default function App() {
     "y",
     "z",
   ];
-  const keys = alfabeto.map((item, index) => {
+  const keys = alfabeto.map((item) => {
     return [item, false];
   });
 
@@ -111,7 +111,7 @@ export default function App() {
 
   const keyOnClick = (key) => {
     const clickedButton = keyButton.map((i) =>
-      i[0] === key ? (i = [key, true]) : i
+      i[0] === key ? ([key, true]) : i
     );
     setKeyButton(clickedButton);
     if (
